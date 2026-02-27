@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update active class
             menuBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
+
             // Sync hidden type-select
             typeSelect.value = btn.dataset.type;
             typeSelect.dispatchEvent(new Event('change')); // Triggers genre update
@@ -32,8 +32,26 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Discover content upon button click
-    discoverBtn.addEventListener('click', async () => {
-        await discoverContent();
+    discoverBtn.addEventListener('click', () => {
+        const type = typeSelect.value;
+        const genre = genreSelect.value;
+        const mood = document.getElementById('mood-select').value;
+        const duration = document.getElementById('duration-select').value;
+        const country = document.getElementById('country-select').value;
+        const language = document.getElementById('language-select').value;
+
+        // Build url params
+        const params = new URLSearchParams({
+            type,
+            genre,
+            mood,
+            duration,
+            country,
+            language
+        });
+
+        // Redirect to new page
+        window.location.href = `results.html?${params.toString()}`;
     });
 
     // 1. Fetch TMDB configuration mapping from backend
@@ -56,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const actualType = (type === 'anime' || type === 'tv') ? 'tv' : 'movie';
             const res = await fetch(`/api/genres?type=${actualType}`);
             const data = await res.json();
-            
+
             // Clear current genres
             genreSelect.innerHTML = '<option value="">Any Genre</option>';
 
@@ -78,68 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 3. Fetch suggestions from backend API
-    const discoverContent = async () => {
-        const type = typeSelect.value;
-        const genre = genreSelect.value;
-
-        // Show loading state and reveal grid if hidden
-        resultsGrid.classList.remove('hidden');
-        resultsGrid.innerHTML = '<div class="welcome-message"><p>Finding the perfect watch for you...</p></div>';
-
-        try {
-            let url = `/api/suggestions?type=${type}`;
-            if (genre) url += `&genre=${genre}`;
-
-            const res = await fetch(url);
-            const data = await res.json();
-
-            if (data.success && data.data.results) {
-                renderResults(data.data.results);
-            } else {
-                showError(data.error || 'Check that your TMDB API Key is configured in the backend (.env).');
-            }
-        } catch (error) {
-            console.error('Failed to discover content:', error);
-            showError('Failed to connect to the backend server. Is it running?');
-        }
-    };
-
-    // Render results back to the layout grid
-    const renderResults = (results) => {
-        resultsGrid.innerHTML = ''; // Clear loading
-
-        if (results.length === 0) {
-            resultsGrid.innerHTML = '<div class="welcome-message"><p>No results found for your preferences.</p></div>';
-            return;
-        }
-
-        results.forEach(item => {
-            const title = item.title || item.name;
-            const posterPath = item.poster_path;
-            const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
-
-            const card = document.createElement('div');
-            card.className = 'movie-card';
-
-            const imgHtml = posterPath 
-                ? `<img class="poster" src="${imageBaseUrl}${posterPath}" alt="${title} Poster">`
-                : `<div class="poster" style="display:flex; align-items:center; justify-content:center; text-align:center; padding: 1rem;">No Poster Available</div>`;
-
-            card.innerHTML = `
-                ${imgHtml}
-                <div class="card-info">
-                    <h3>${title}</h3>
-                    <div class="rating">⭐ ${rating}</div>
-                </div>
-            `;
-            resultsGrid.appendChild(card);
-        });
-    };
-
-    const showError = (message) => {
-        resultsGrid.innerHTML = `<div class="error-message"><h3>Error</h3><p>${message}</p></div>`;
-    };
+    // The discoverContent, renderResults, and showError functions have been 
+    // moved conceptually to results logic. They are left here in case the backend 
+    // requires them on index.html, but they won't be called on click anymore.
+    // They could be deleted if we build a separate results.js.
 
     // Kick it off
     init();
