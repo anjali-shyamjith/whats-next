@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's Next? - Results</title>
+    <!-- Google Fonts Matching Landing Page -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,700&family=Syne:wght@700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="results-page-body">
+    <!-- SVG Noise Texture Filter -->
+    <svg style="display:none;">
+        <filter id="noiseFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+    </svg>
+    <div class="noise-overlay"></div>
+
+    <!-- Top Middle Fixed Header -->
+    <header class="fixed-header">
+        <h1>What's Next?</h1>
+    </header>
+
+    <main class="results-dashboard-wrap">
+
+        <!-- Top Nav / Back Button Area -->
+        <div class="results-nav-area">
+            <a href="index.html" class="back-btn">
+                <span class="icon">⟵</span> Back to Search
+            </a>
+        </div>
+
+        <!-- Section Title -->
+        <div class="results-headline">
+            <h2>The Top Rated 50 Movies</h2>
+        </div>
+
+        <!-- 4-Column Grid Container -->
+        <section id="results-paginated" class="strict-results-grid">
+            <!-- Example Template for JS injection, statically designed to ensure layout precision -->
+            <!-- 
+            <div class="strict-movie-card">
+                <img class="strict-poster" src="https://image.tmdb.org/t/p/w500..." alt="Poster">
+                <div class="strict-card-info">
+                    <h3>Movie Name</h3>
+                    <div class="strict-rating">⭐ 8.5</div>
+                </div>
+            </div>
+            -->
+        </section>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-container">
+            <button class="page-btn prev-btn" disabled>Prev</button>
+            <div class="page-numbers">
+                <!-- Injected via JS -->
+            </div>
+            <button class="page-btn next-btn">Next</button>
+        </div>
+
+    </main>
+
+    <script src="results.js"></script>
+</body>
+
+</html>
