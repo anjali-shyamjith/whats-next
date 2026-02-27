@@ -1,51 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>What's Next? - Discover Your Next Favorite Show</title>
+    <title>What's Next?</title>
+    <!-- Add Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&family=Syne:wght@700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <div class="glass-container">
-        <header>
-            <h1>What's Next?</h1>
-            <p>Discover movies, TV shows, anime, and documentaries tailored for you.</p>
-        </header>
+    <!-- SVG Noise Texture Filter -->
+    <svg style="display:none;">
+        <filter id="noiseFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+    </svg>
+    <div class="noise-overlay"></div>
+    <!-- Top Middle Fixed Header -->
+    <header class="fixed-header">
+        <h1>What's Next?</h1>
+    </header>
 
-        <section class="controls">
-            <div class="control-group">
-                <label for="type-select">I want to watch:</label>
-                <select id="type-select">
-                    <option value="movie">Movies</option>
-                    <option value="tv">TV Series</option>
-                    <option value="anime">Anime</option>
-                    <option value="documentary">Documentaries</option>
-                </select>
+    <main class="dashboard-wrap">
+        <!-- Floating Left Menu Bar -->
+        <aside class="left-menu-bar">
+            <h3 class="menu-title">Explore</h3>
+            <div class="menu-items">
+                <button class="menu-btn active" data-type="movie">
+                    Movies
+                </button>
+                <button class="menu-btn" data-type="tv">
+                    Series
+                </button>
+                <button class="menu-btn" data-type="documentary">
+                    Documentaries
+                </button>
+                <button class="menu-btn" data-type="anime">
+                    Anime
+                </button>
             </div>
 
-            <div class="control-group">
-                <label for="genre-select">Genre:</label>
-                <select id="genre-select">
-                    <option value="">Any Genre</option>
-                    <!-- Populated via API -->
-                </select>
+            <!-- Hidden original type-select to keep script.js functional if needed -->
+            <select id="type-select" style="display: none;">
+                <option value="movie">Movies</option>
+                <option value="tv">TV Series</option>
+                <option value="documentary">Documentaries</option>
+                <option value="anime">Anime</option>
+            </select>
+        </aside>
+
+        <!-- Right Side Configuration Area -->
+        <section class="configuration-area">
+
+            <div class="dropdowns-layout">
+                <!-- Top Row (3 dropdowns) -->
+                <div class="dropdown-row top-row">
+                    <div class="dropdown-card">
+                        <label for="mood-select">Mood</label>
+                        <select id="mood-select" class="custom-select">
+                            <option value="">Any Mood</option>
+                            <option value="happy">Happy</option>
+                            <option value="sad">Sad</option>
+                            <option value="fun">Fun</option>
+                            <option value="thrilling">Thrilling</option>
+                        </select>
+                    </div>
+
+                    <div class="dropdown-card">
+                        <label for="genre-select">Genre</label>
+                        <select id="genre-select" class="custom-select">
+                            <option value="">Any Genre</option>
+                            <!-- Populated via JS API -->
+                        </select>
+                    </div>
+
+                    <div class="dropdown-card">
+                        <label for="duration-select">Duration</label>
+                        <select id="duration-select" class="custom-select">
+                            <option value="">Any Duration</option>
+                            <option value="short">&lt; 90 mins</option>
+                            <option value="medium">90 - 120 mins</option>
+                            <option value="long">120+ mins</option>
+                            <option value="binge">Binge series</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bottom Row (2 dropdowns, staggered) -->
+                <div class="dropdown-row bottom-row">
+                    <div class="dropdown-card">
+                        <label for="country-select">Country</label>
+                        <select id="country-select" class="custom-select">
+                            <option value="">Any Country</option>
+                            <option value="US">United States</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="KR">South Korea</option>
+                            <option value="JP">Japan</option>
+                            <option value="IN">India</option>
+                        </select>
+                    </div>
+
+                    <div class="dropdown-card">
+                        <label for="language-select">Language</label>
+                        <select id="language-select" class="custom-select">
+                            <option value="">Any Language</option>
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="ko">Korean</option>
+                            <option value="ja">Japanese</option>
+                            <option value="hi">Hindi</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <button id="discover-btn" class="primary-btn">Discover</button>
+            <!-- Suggest Button -->
+            <div class="action-container">
+                <button id="discover-btn" class="primary-suggest-btn">Suggest</button>
+
+                <!-- Side-by-side links -->
+                <div class="secondary-links">
+                    <a href="#" class="nav-link">Suggest based on past watches</a>
+                    <span class="divider">•</span>
+                    <a href="#" class="nav-link">Surprise me</a>
+                </div>
+            </div>
+
+            <!-- Results container will slide in here seamlessly -->
+            <section id="results" class="results-grid hidden"></section>
         </section>
+    </main>
 
-        <section id="results" class="results-grid">
-            <!-- Results populated here -->
-            <div class="welcome-message">
-                <p>Select your preferences above and click Discover!</p>
-            </div>
-        </section>
-    </div>
-    
     <script src="script.js"></script>
 </body>
+
 </html>

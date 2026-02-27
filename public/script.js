@@ -6,6 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let imageBaseUrl = 'https://image.tmdb.org/t/p/w500'; // Default fallback
 
+    // --- Sidebar Menu Logic ---
+    const menuBtns = document.querySelectorAll('.menu-btn');
+    menuBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active class
+            menuBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Sync hidden type-select
+            typeSelect.value = btn.dataset.type;
+            typeSelect.dispatchEvent(new Event('change')); // Triggers genre update
+        });
+    });
+
     // Initialize application
     const init = async () => {
         await fetchConfig();
@@ -69,7 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const type = typeSelect.value;
         const genre = genreSelect.value;
 
-        // Show loading state
+        // Show loading state and reveal grid if hidden
+        resultsGrid.classList.remove('hidden');
         resultsGrid.innerHTML = '<div class="welcome-message"><p>Finding the perfect watch for you...</p></div>';
 
         try {
