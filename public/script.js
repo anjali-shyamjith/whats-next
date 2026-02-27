@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update active class
             menuBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            
+
             // Sync hidden type-select
             typeSelect.value = btn.dataset.type;
             typeSelect.dispatchEvent(new Event('change')); // Triggers genre update
@@ -31,9 +31,23 @@ document.addEventListener('DOMContentLoaded', () => {
         await fetchGenres(e.target.value);
     });
 
-    // Discover content upon button click
-    discoverBtn.addEventListener('click', async () => {
-        await discoverContent();
+    // Suggest button → navigate to results page with params
+    discoverBtn.addEventListener('click', () => {
+        const type = typeSelect.value;
+        const genre = genreSelect.value;
+        const mood = document.getElementById('mood-select') ? document.getElementById('mood-select').value : '';
+        const duration = document.getElementById('duration-select') ? document.getElementById('duration-select').value : '';
+        const country = document.getElementById('country-select') ? document.getElementById('country-select').value : '';
+        const language = document.getElementById('language-select') ? document.getElementById('language-select').value : '';
+
+        const params = new URLSearchParams({ type });
+        if (genre) params.append('genre', genre);
+        if (mood) params.append('mood', mood);
+        if (duration) params.append('duration', duration);
+        if (country) params.append('country', country);
+        if (language) params.append('language', language);
+
+        window.location.href = `results.html?${params.toString()}`;
     });
 
     // 1. Fetch TMDB configuration mapping from backend
@@ -56,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const actualType = (type === 'anime' || type === 'tv') ? 'tv' : 'movie';
             const res = await fetch(`/api/genres?type=${actualType}`);
             const data = await res.json();
-            
+
             // Clear current genres
             genreSelect.innerHTML = '<option value="">Any Genre</option>';
 
@@ -122,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'movie-card';
 
-            const imgHtml = posterPath 
+            const imgHtml = posterPath
                 ? `<img class="poster" src="${imageBaseUrl}${posterPath}" alt="${title} Poster">`
                 : `<div class="poster" style="display:flex; align-items:center; justify-content:center; text-align:center; padding: 1rem;">No Poster Available</div>`;
 

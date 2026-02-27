@@ -107,14 +107,11 @@ h3 {
     top: 0;
     left: 0;
     width: 100%;
-    height: 90px;
-    padding-top: 2rem;
-    /* Requested padding */
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(14, 10, 26, 0.8);
-    /* Used bg-base with opacity */
+    background: rgba(14, 10, 26, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--glass-border);
@@ -123,15 +120,41 @@ h3 {
 
 .fixed-header h1 {
     font-size: 2.5rem;
-    /* Increased size */
     font-weight: 800;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
     background: linear-gradient(to right, #ffffff, var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     text-transform: uppercase;
     letter-spacing: 1px;
-    text-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+}
+
+/* ================== BACK BUTTON ================== */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.back-btn:hover {
+    background: rgba(35, 26, 66, 0.9);
+    border-color: rgba(168, 85, 247, 0.4);
+    transform: translateX(-4px);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.2);
 }
 
 /* ================== MAIN LAYOUT ================== */
