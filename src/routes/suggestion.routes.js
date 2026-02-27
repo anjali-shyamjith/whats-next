@@ -3,15 +3,12 @@ const router = express.Router();
 const { sendResponse } = require('../utils/response');
 const { discoverContent } = require('../services/tmdb.service');
 
-// GET /api/suggestions
+// GET /api/suggestions?type=movie&mood=dark&duration=short&page=1&limit=20
 router.get('/', async (req, res) => {
   try {
-    const { type, genre, rating, page, sort_by, mood, duration, country, language } = req.query;
+    const { type, genre, rating, page, limit, sort_by, mood, duration, country, language } = req.query;
 
-    // Default to 'movie' if no type is provided
     const requestedType = type || 'movie';
-
-    // Validate type
     const validTypes = ['movie', 'tv', 'anime', 'documentary'];
     if (!validTypes.includes(requestedType)) {
       return sendResponse(
@@ -27,7 +24,6 @@ router.get('/', async (req, res) => {
       type: requestedType,
       genre,
       rating,
-      page,
       sort_by,
       mood,
       duration,
@@ -35,8 +31,12 @@ router.get('/', async (req, res) => {
       language,
     };
 
-    const suggestions = await discoverContent(discoverParams);
-    
+    const suggestions = await discoverContent(
+      discoverParams,
+      parseInt(page) || 1,
+      parseInt(limit) || 20
+    );
+
     return sendResponse(res, 200, true, suggestions);
   } catch (error) {
     console.error('Error fetching suggestions:', error.message);
