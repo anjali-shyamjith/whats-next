@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What's Next? - Discover Your Next Favorite Show</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-container">
+        <header>
+            <h1>What's Next?</h1>
+            <p>Discover movies, TV shows, anime, and documentaries tailored for you.</p>
+        </header>
+
+        <section class="controls">
+            <div class="control-group">
+                <label for="type-select">I want to watch:</label>
+                <select id="type-select">
+                    <option value="movie">Movies</option>
+                    <option value="tv">TV Series</option>
+                    <option value="anime">Anime</option>
+                    <option value="documentary">Documentaries</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="genre-select">Genre:</label>
+                <select id="genre-select">
+                    <option value="">Any Genre</option>
+                    <!-- Populated via API -->
+                </select>
+            </div>
+
+            <button id="discover-btn" class="primary-btn">Discover</button>
+        </section>
+
+        <section id="results" class="results-grid">
+            <!-- Results populated here -->
+            <div class="welcome-message">
+                <p>Select your preferences above and click Discover!</p>
+            </div>
+        </section>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
