@@ -86,17 +86,22 @@ const getDurationModifiers = (duration) => {
 
 /**
  * Discovers content based on filters.
+ * Fetches multiple pages from TMDB, sorts by rating, caps at 50, and returns paginated results.
  *
- * @param {Object} queryParams
+ * @param {Object} params - Filter and pagination params
+ * @param {number} page   - The page number for the frontend paginator (default 1)
+ * @param {number} limit  - Results per page (default 20)
  */
-const discoverContent = async (params) => {
+const discoverContent = async (params, page = 1, limit = 20) => {
   const client = getTmdbClient();
-  const { type, genre, rating, page, sort_by, mood, duration, country, language } = params;
+  const { type, genre, rating, sort_by, mood, duration, country, language } = params;
 
   let endpoint = '/discover/movie'; // default
   let queryOptions = {
-    page: page || 1,
-    sort_by: sort_by || 'popularity.desc',
+    // Always sort by rating for the results page
+    sort_by: sort_by || 'vote_average.desc',
+    // Require a minimum vote count so low-vote obscure entries don't flood top results
+    'vote_count.gte': 50,
   };
 
   // 1. Apply basic filters
@@ -111,8 +116,7 @@ const discoverContent = async (params) => {
   if (mood) {
     const moodMods = getMoodModifiers(mood);
     if (moodMods.genres) {
-      // Append to existing genres if any, else set
-      queryOptions.with_genres = queryOptions.with_genres 
+      queryOptions.with_genres = queryOptions.with_genres
         ? `${queryOptions.with_genres},${moodMods.genres}`
         : moodMods.genres;
     }
@@ -139,16 +143,50 @@ const discoverContent = async (params) => {
     endpoint = '/discover/tv';
   } else if (type === 'anime') {
     endpoint = '/discover/tv';
-    queryOptions.with_genres = queryOptions.with_genres ? `${queryOptions.with_genres},16` : '16'; // 16 is Animation genre for TV
-    // Fallback/override to Japanese if not explicitly set by the language filter
-    queryOptions.with_original_language = queryOptions.with_original_language || 'ja'; 
+    queryOptions.with_genres = queryOptions.with_genres ? `${queryOptions.with_genres},16` : '16';
+    queryOptions.with_original_language = queryOptions.with_original_language || 'ja';
   } else if (type === 'documentary') {
     endpoint = '/discover/movie';
-    queryOptions.with_genres = queryOptions.with_genres ? `${queryOptions.with_genres},99` : '99'; // 99 is Documentary genre for movies
+    queryOptions.with_genres = queryOptions.with_genres ? `${queryOptions.with_genres},99` : '99';
   }
-  
-  const response = await client.get(endpoint, { params: queryOptions });
-  return response.data;
+
+  // 4. Fetch 3 pages from TMDB to build a pool of up to ~60 results,
+  //    which we then trim and re-paginate client-side for the top-50 guarantee.
+  const pageRequests = [1, 2, 3].map(p =>
+    client.get(endpoint, { params: { ...queryOptions, page: p } }).catch(() => null)
+  );
+
+  const responses = await Promise.all(pageRequests);
+  let allResults = responses
+    .filter(Boolean)
+    .flatMap(res => res.data.results || []);
+
+  // 5. Deduplicate by TMDB id
+  const seen = new Set();
+  allResults = allResults.filter(item => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+
+  // 6. Sort by vote_average descending (highest rated first)
+  allResults.sort((a, b) => b.vote_average - a.vote_average);
+
+  // 7. Cap at top 50
+  const top50 = allResults.slice(0, 50);
+
+  // 8. Paginate the top-50 pool
+  const totalResults = top50.length;
+  const totalPages = Math.ceil(totalResults / limit);
+  const validPage = Math.max(1, Math.min(page, totalPages || 1));
+  const start = (validPage - 1) * limit;
+
+  return {
+    page: validPage,
+    results: top50.slice(start, start + limit),
+    total_pages: totalPages,
+    total_results: totalResults,
+  };
 };
 
 /**
@@ -180,18 +218,25 @@ const searchMedia = async (query, page = 1) => {
  * Takes up to 5 TMDB media items, fetches individual recommendations, and aggregates them.
  *
  * @param {Array} items - Array of objects like { id: 123, type: 'movie' }
+ * @param {number} page - The page number to fetch (defaults to 1)
+ * @param {number} limit - The number of results per page (defaults to 20)
  */
-const getAggregatedRecommendations = async (items) => {
+const getAggregatedRecommendations = async (items, page = 1, limit = 20) => {
   const client = getTmdbClient();
-  let allRecommendations = [];
 
   // 1. Fetch recommendations for each individual item concurrently
   const fetchPromises = items.map(async (item) => {
     try {
       // TMDB native recommendations endpoint: /movie/{id}/recommendations or /tv/{id}/recommendations
       const type = item.type === 'tv' ? 'tv' : 'movie';
-      const res = await client.get(`/${type}/${item.id}/recommendations`);
-      return res.data.results || [];
+      // Fetch more pages from TMDB to ensure we have enough unique pool items
+      // (TMDB returns 20 per page, fetching page 1 and 2 normally provides enough unique IDs)
+      const res1 = client.get(`/${type}/${item.id}/recommendations`, { params: { page: 1 } });
+      const res2 = client.get(`/${type}/${item.id}/recommendations`, { params: { page: 2 } });
+      
+      const [data1, data2] = await Promise.all([res1, res2]);
+      
+      return [...(data1.data.results || []), ...(data2.data.results || [])];
     } catch (error) {
       console.warn(`Failed to fetch recommendations for ${item.type} ${item.id}`);
       return [];
@@ -211,6 +256,11 @@ const getAggregatedRecommendations = async (items) => {
     const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
     const uniqueKey = `${mediaType}_${media.id}`;
 
+    // Filter out the items that were passed as input (we don't want to recommend what they just selected)
+    if (items.some(inputItem => inputItem.id === media.id)) {
+      return;
+    }
+
     if (frequencyMap.has(uniqueKey)) {
       const existing = frequencyMap.get(uniqueKey);
       existing.score += 1; // Appears in multiple source recommendations
@@ -224,15 +274,33 @@ const getAggregatedRecommendations = async (items) => {
   });
 
   // 3. Sort by 'score' (how many selected items recommended this), then fall back to TMDB popularity
-  const sortedRecommendations = Array.from(frequencyMap.values()).sort((a, b) => {
+  let sortedRecommendations = Array.from(frequencyMap.values()).sort((a, b) => {
     if (b.score !== a.score) {
       return b.score - a.score;
     }
     return b.popularity - a.popularity;
   });
 
-  // 4. Return top 20
-  return sortedRecommendations.slice(0, 20);
+  // Cap top results at 50, per requirements
+  sortedRecommendations = sortedRecommendations.slice(0, 50);
+
+  // 4. Handle pagination of the final top-50 array
+  const totalResults = sortedRecommendations.length;
+  const totalPages = Math.ceil(totalResults / limit);
+  
+  // Ensure valid page bounds
+  const validPage = Math.max(1, Math.min(page, totalPages || 1));
+  const startIndex = (validPage - 1) * limit;
+  const endIndex = startIndex + limit;
+
+  const paginatedResults = sortedRecommendations.slice(startIndex, endIndex);
+
+  return {
+    page: validPage,
+    results: paginatedResults,
+    total_pages: totalPages,
+    total_results: totalResults
+  };
 };
 
 module.exports = {

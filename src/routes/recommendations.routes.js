@@ -5,9 +5,12 @@ const { getAggregatedRecommendations } = require('../services/tmdb.service');
 
 // POST /api/recommendations
 // Body expects: { "items": [{ id: 123, type: 'movie' }, { id: 456, type: 'tv' }] }
+// Query params: ?page=1&limit=20
 router.post('/', async (req, res) => {
   try {
     const { items } = req.body;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return sendResponse(
@@ -42,9 +45,9 @@ router.post('/', async (req, res) => {
       }
     }
 
-    const recommendations = await getAggregatedRecommendations(items);
+    const recommendations = await getAggregatedRecommendations(items, page, limit);
     
-    return sendResponse(res, 200, true, { results: recommendations });
+    return sendResponse(res, 200, true, recommendations);
   } catch (error) {
     console.error('Error fetching aggregated recommendations:', error.message);
     return sendResponse(
