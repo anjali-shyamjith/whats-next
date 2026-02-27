@@ -303,6 +303,56 @@ const getAggregatedRecommendations = async (items, page = 1, limit = 20) => {
   };
 };
 
+/**
+ * Fetches full detail for a single movie or TV item.
+ * Returns a normalized object ready for the detail page:
+ *   poster_url, title, synopsis, rating, plus the raw TMDB data.
+ *
+ * @param {'movie'|'tv'} type
+ * @param {number|string} id
+ */
+const getMediaDetail = async (type, id) => {
+  const client = getTmdbClient();
+  const endpoint = type === 'tv' ? `/tv/${id}` : `/movie/${id}`;
+
+  const response = await client.get(endpoint);
+  const raw = response.data;
+
+  // Build a normalised shape for the frontend detail page
+  const detail = {
+    id: raw.id,
+    media_type: type,
+    // Title: movies use 'title', TV uses 'name'
+    title: raw.title || raw.name,
+    original_title: raw.original_title || raw.original_name,
+    // Synopsis
+    synopsis: raw.overview,
+    // Poster – full URL using the standard TMDB image base
+    poster_path: raw.poster_path,
+    poster_url: raw.poster_path
+      ? `https://image.tmdb.org/t/p/w500${raw.poster_path}`
+      : null,
+    // Rating
+    rating: raw.vote_average,
+    vote_count: raw.vote_count,
+    // Release info
+    release_date: raw.release_date || raw.first_air_date,
+    // Genres array [{id, name}]
+    genres: raw.genres || [],
+    // Runtime (minutes for movies, episode_run_time[0] for TV)
+    runtime: raw.runtime || (raw.episode_run_time && raw.episode_run_time[0]) || null,
+    // Language / country
+    original_language: raw.original_language,
+    origin_country: raw.origin_country || [],
+    // Status (Released, Ended, etc.)
+    status: raw.status,
+    // Raw TMDB data for any additional fields the frontend may need
+    _raw: raw,
+  };
+
+  return detail;
+};
+
 module.exports = {
   getConfig,
   getGenres,
@@ -311,4 +361,5 @@ module.exports = {
   discoverContent,
   searchMedia,
   getAggregatedRecommendations,
+  getMediaDetail,
 };
