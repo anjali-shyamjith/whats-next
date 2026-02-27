@@ -304,49 +304,70 @@ const getAggregatedRecommendations = async (items, page = 1, limit = 20) => {
 };
 
 /**
- * Fetches full detail for a single movie or TV item.
- * Returns a normalized object ready for the detail page:
- *   poster_url, title, synopsis, rating, plus the raw TMDB data.
+ * Fetches full detail for a single movie or TV item, including cast and crew.
+ * Returns a normalized object ready for the detail page.
  *
  * @param {'movie'|'tv'} type
  * @param {number|string} id
  */
 const getMediaDetail = async (type, id) => {
   const client = getTmdbClient();
-  const endpoint = type === 'tv' ? `/tv/${id}` : `/movie/${id}`;
+  const baseEndpoint = type === 'tv' ? `/tv/${id}` : `/movie/${id}`;
+  // 'aggregate_credits' combines cast across all seasons for TV
+  const creditsAppend = type === 'tv' ? 'aggregate_credits' : 'credits';
 
-  const response = await client.get(endpoint);
+  // Single request using TMDB's append_to_response to avoid connection resets
+  const response = await client.get(baseEndpoint, {
+    params: { append_to_response: creditsAppend },
+  });
+
   const raw = response.data;
+  const credits = raw[creditsAppend] || {};
 
-  // Build a normalised shape for the frontend detail page
+  // Helper to build a full profile image URL
+  const profileUrl = (path) =>
+    path ? `https://image.tmdb.org/t/p/w185${path}` : null;
+
+  // Normalize cast — TV aggregate_credits uses 'roles' array instead of 'character' string
+  const cast = (credits.cast || []).map((person) => ({
+    id: person.id,
+    name: person.name,
+    character: person.character || (person.roles && person.roles[0]?.character) || null,
+    profile_path: person.profile_path,
+    profile_url: profileUrl(person.profile_path),
+    order: person.order ?? 999,
+  }));
+
+  // Normalize crew
+  const crew = (credits.crew || []).map((person) => ({
+    id: person.id,
+    name: person.name,
+    job: person.job,
+    department: person.department,
+    profile_path: person.profile_path,
+    profile_url: profileUrl(person.profile_path),
+  }));
+
   const detail = {
     id: raw.id,
     media_type: type,
-    // Title: movies use 'title', TV uses 'name'
     title: raw.title || raw.name,
     original_title: raw.original_title || raw.original_name,
-    // Synopsis
     synopsis: raw.overview,
-    // Poster – full URL using the standard TMDB image base
     poster_path: raw.poster_path,
     poster_url: raw.poster_path
       ? `https://image.tmdb.org/t/p/w500${raw.poster_path}`
       : null,
-    // Rating
     rating: raw.vote_average,
     vote_count: raw.vote_count,
-    // Release info
     release_date: raw.release_date || raw.first_air_date,
-    // Genres array [{id, name}]
     genres: raw.genres || [],
-    // Runtime (minutes for movies, episode_run_time[0] for TV)
     runtime: raw.runtime || (raw.episode_run_time && raw.episode_run_time[0]) || null,
-    // Language / country
     original_language: raw.original_language,
     origin_country: raw.origin_country || [],
-    // Status (Released, Ended, etc.)
     status: raw.status,
-    // Raw TMDB data for any additional fields the frontend may need
+    cast,
+    crew,
     _raw: raw,
   };
 
