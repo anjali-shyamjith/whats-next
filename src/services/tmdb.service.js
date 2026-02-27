@@ -151,10 +151,96 @@ const discoverContent = async (params) => {
   return response.data;
 };
 
+/**
+ * Searches for movies and TV shows using TMDB multi-search.
+ *
+ * @param {string} query - The search string
+ * @param {number} page - Page number
+ */
+const searchMedia = async (query, page = 1) => {
+  const client = getTmdbClient();
+  const response = await client.get('/search/multi', {
+    params: {
+      query,
+      page,
+      include_adult: false,
+    },
+  });
+  
+  // Filter out 'person' results from multi-search as we only want media
+  const mediaResults = response.data.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+  
+  return {
+    ...response.data,
+    results: mediaResults,
+  };
+};
+
+/**
+ * Takes up to 5 TMDB media items, fetches individual recommendations, and aggregates them.
+ *
+ * @param {Array} items - Array of objects like { id: 123, type: 'movie' }
+ */
+const getAggregatedRecommendations = async (items) => {
+  const client = getTmdbClient();
+  let allRecommendations = [];
+
+  // 1. Fetch recommendations for each individual item concurrently
+  const fetchPromises = items.map(async (item) => {
+    try {
+      // TMDB native recommendations endpoint: /movie/{id}/recommendations or /tv/{id}/recommendations
+      const type = item.type === 'tv' ? 'tv' : 'movie';
+      const res = await client.get(`/${type}/${item.id}/recommendations`);
+      return res.data.results || [];
+    } catch (error) {
+      console.warn(`Failed to fetch recommendations for ${item.type} ${item.id}`);
+      return [];
+    }
+  });
+
+  const resultsArrays = await Promise.all(fetchPromises);
+
+  // 2. Flatten the arrays and keep track of frequencies & deduplicate
+  const frequencyMap = new Map();
+
+  resultsArrays.flat().forEach(media => {
+    // Only process valid movie/tv responses
+    if (!media.id) return;
+    
+    // Create a unique key using type and id to handle ID collisions between movies/tv
+    const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
+    const uniqueKey = `${mediaType}_${media.id}`;
+
+    if (frequencyMap.has(uniqueKey)) {
+      const existing = frequencyMap.get(uniqueKey);
+      existing.score += 1; // Appears in multiple source recommendations
+    } else {
+      frequencyMap.set(uniqueKey, {
+        ...media,
+        media_type: mediaType,
+        score: 1,
+      });
+    }
+  });
+
+  // 3. Sort by 'score' (how many selected items recommended this), then fall back to TMDB popularity
+  const sortedRecommendations = Array.from(frequencyMap.values()).sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    return b.popularity - a.popularity;
+  });
+
+  // 4. Return top 20
+  return sortedRecommendations.slice(0, 20);
+};
+
 module.exports = {
   getConfig,
   getGenres,
   getLanguages,
   getCountries,
   discoverContent,
+  searchMedia,
+  getAggregatedRecommendations,
 };
