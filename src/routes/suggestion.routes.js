@@ -6,7 +6,7 @@ const { discoverContent } = require('../services/tmdb.service');
 // GET /api/suggestions
 router.get('/', async (req, res) => {
   try {
-    const { type, genre, rating, page, sort_by } = req.query;
+    const { type, genre, rating, page, sort_by, mood, duration, country, language } = req.query;
 
     // Default to 'movie' if no type is provided
     const requestedType = type || 'movie';
@@ -29,6 +29,10 @@ router.get('/', async (req, res) => {
       rating,
       page,
       sort_by,
+      mood,
+      duration,
+      country,
+      language,
     };
 
     const suggestions = await discoverContent(discoverParams);
