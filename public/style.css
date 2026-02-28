@@ -782,3 +782,11 @@ h3 {
     color: #fff;
     box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
 }
+
+/* Movie detail page – empty state for cast/crew */
+.people-empty {
+    color: var(--text-secondary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    padding: 8px 0;
+}

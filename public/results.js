@@ -115,6 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         grid.innerHTML = '';
+        const urlParams = new URLSearchParams(window.location.search);
+        const mediaType = urlParams.get('type') || 'movie';
+
         items.forEach((item) => {
             const title = item.title || item.name || 'Untitled';
             const poster = item._poster || fallbackPoster(0);
@@ -122,12 +125,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const card = document.createElement('div');
             card.className = 'strict-movie-card';
+            card.style.cursor = 'pointer';
             card.innerHTML = `
                 <img class="strict-poster" src="${poster}" alt="${title} Poster" loading="lazy">
                 <div class="strict-card-info">
                     <h3>${title}</h3>
                     <span class="strict-rating">⭐ ${rating}</span>
                 </div>`;
+
+            // Navigate to detail page on click, preserving the current results URL so the back button works
+            card.addEventListener('click', () => {
+                const id = item.id || '';
+                const fromUrl = encodeURIComponent(window.location.href);
+                window.location.href = `movie.html?id=${id}&type=${mediaType}&from=${fromUrl}`;
+            });
+
             grid.appendChild(card);
         });
 
