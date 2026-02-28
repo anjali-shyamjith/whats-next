@@ -38,48 +38,69 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /* ── fetch suggestions from backend ── */
-    const fetchMovies = async () => {
+    const loadResults = async () => {
         const params = new URLSearchParams(window.location.search);
         const type = params.get('type') || 'movie';
-        const genre = params.get('genre') || '';
-        const mood = params.get('mood') || '';
-        const duration = params.get('duration') || '';
-        const country = params.get('country') || '';
-        const language = params.get('language') || '';
+        const genre = params.get('genre');
+        const mood = params.get('mood');
+        const duration = params.get('duration');
+        const country = params.get('country');
+        const language = params.get('language');
+        const watchlist = params.get('watchlist');
 
-        let url = `/api/suggestions?type=${type}`;
-        if (genre) url += `&genre=${genre}`;
-        if (mood) url += `&mood=${mood}`;
-        if (duration) url += `&duration=${duration}`;
-        if (country) url += `&country=${country}`;
-        if (language) url += `&language=${language}`;
+        let data = null;
 
-        try {
-            const res = await fetch(url);
-            const data = await res.json();
+        if (watchlist) {
+            // Handle Watchlist Recommendations via POST
+            const ids = watchlist.split(',');
+            const items = ids.map(id => ({ id: id.startsWith('f') ? 550 : id, type: 'movie' })); // Fallback ID 550 if it's a fake 'f' prefixed ID
 
-            if (data.success && data.data.results && data.data.results.length > 0) {
-                let results = data.data.results.map((item, idx) => ({
-                    ...item,
-                    _poster: item.poster_path
-                        ? imageBaseUrl + item.poster_path
-                        : fallbackPoster(idx),
-                }));
-
-                // Pad / trim to exactly 50
-                let i = 0;
-                while (results.length < 50) {
-                    results.push({
-                        title: `Extra Pick #${++i}`,
-                        _poster: fallbackPoster(results.length),
-                        vote_average: +(8.5 - i * 0.05).toFixed(1),
-                    });
-                }
-                allMovies = results.slice(0, 50);
-            } else {
-                allMovies = buildFallbackList();
+            try {
+                const res = await fetch('/api/recommendations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: items.slice(0, 5) })
+                });
+                data = await res.json();
+            } catch (err) {
+                console.error('Watchlist fetch error:', err);
             }
-        } catch (_) {
+        } else {
+            // Standard Suggestions via GET
+            let url = `/api/suggestions?type=${type}`;
+            if (genre) url += `&genre=${genre}`;
+            if (mood) url += `&mood=${mood}`;
+            if (duration) url += `&duration=${duration}`;
+            if (country) url += `&country=${country}`;
+            if (language) url += `&language=${language}`;
+
+            try {
+                const res = await fetch(url);
+                data = await res.json();
+            } catch (err) {
+                console.error('Standard fetch error:', err);
+            }
+        }
+
+        if (data && data.success && data.data.results && data.data.results.length > 0) {
+            let results = data.data.results.map((item, idx) => ({
+                ...item,
+                _poster: item.poster_path
+                    ? imageBaseUrl + item.poster_path
+                    : fallbackPoster(idx),
+            }));
+
+            // Pad / trim to exactly 50
+            let i = 0;
+            while (results.length < 50) {
+                results.push({
+                    title: `Extra Pick #${++i}`,
+                    _poster: fallbackPoster(results.length),
+                    vote_average: +(8.5 - i * 0.05).toFixed(1),
+                });
+            }
+            allMovies = results.slice(0, 50);
+        } else {
             allMovies = buildFallbackList();
         }
 
@@ -170,6 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ── init ── */
     (async () => {
         await fetchConfig();
-        await fetchMovies();
+        await loadResults();
     })();
 });
