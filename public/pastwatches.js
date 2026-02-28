@@ -11,34 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let allMovies = [];   // the full top-25 list
     let currentList = []; // filtered subset shown in grid
 
-    /* ── Helpers ── */
-    const FALLBACK_MOVIES = [
-        { _id: 'f0', title: 'The Shawshank Redemption', _poster: 'https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg' },
-        { _id: 'f1', title: 'The Godfather', _poster: 'https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg' },
-        { _id: 'f2', title: 'The Dark Knight', _poster: 'https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg' },
-        { _id: 'f3', title: '12 Angry Men', _poster: 'https://image.tmdb.org/t/p/w500/bptfVGEQuv6vDTIMVNDjZvqVZEN.jpg' },
-        { _id: 'f4', title: "Schindler's List", _poster: 'https://image.tmdb.org/t/p/w500/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg' },
-        { _id: 'f5', title: 'The Lord of the Rings', _poster: 'https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg' },
-        { _id: 'f6', title: 'Pulp Fiction', _poster: 'https://image.tmdb.org/t/p/w500/d5iIlFn5s0ImszYzBPbOYKQwsc.jpg' },
-        { _id: 'f7', title: 'Forrest Gump', _poster: 'https://image.tmdb.org/t/p/w500/saHP97rTPS5eLmrLQEcANm4lk56.jpg' },
-        { _id: 'f8', title: 'Fight Club', _poster: 'https://image.tmdb.org/t/p/w500/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg' },
-        { _id: 'f9', title: 'The Matrix', _poster: 'https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg' },
-        { _id: 'f10', title: 'Interstellar', _poster: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg' },
-        { _id: 'f11', title: 'Inception', _poster: 'https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg' },
-        { _id: 'f12', title: 'Goodfellas', _poster: 'https://image.tmdb.org/t/p/w500/aKuFiU82s5ISJpGZp7YkIr3kCUd.jpg' },
-        { _id: 'f13', title: 'The Silence of the Lambs', _poster: 'https://image.tmdb.org/t/p/w500/uS9m8OBk1A8eM9I042bx8XXpqAq.jpg' },
-        { _id: 'f14', title: 'Se7en', _poster: 'https://image.tmdb.org/t/p/w500/69Sns8WoET6CfaYlIkHbla4l7nC.jpg' },
-        { _id: 'f15', title: 'The Prestige', _poster: 'https://image.tmdb.org/t/p/w500/5MXyQfz8xUP3dIFPTKe7K3GVTVA.jpg' },
-        { _id: 'f16', title: 'Parasite', _poster: 'https://image.tmdb.org/t/p/w500/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg' },
-        { _id: 'f17', title: 'Spirited Away', _poster: 'https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg' },
-        { _id: 'f18', title: 'Avengers: Endgame', _poster: 'https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg' },
-        { _id: 'f19', title: 'The Lion King', _poster: 'https://image.tmdb.org/t/p/w500/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg' },
-        { _id: 'f20', title: 'Gladiator', _poster: 'https://image.tmdb.org/t/p/w500/ty8TGRuvJLPUmAR1H1nRIsgwvim.jpg' },
-        { _id: 'f21', title: 'The Green Mile', _poster: 'https://image.tmdb.org/t/p/w500/velWPhVMQeQKcxggNEU8YmU1xZu.jpg' },
-        { _id: 'f22', title: 'Amélie', _poster: 'https://image.tmdb.org/t/p/w500/wQOHB3C8EDJ35DeTApJBOkL9hqH.jpg' },
-        { _id: 'f23', title: 'Whiplash', _poster: 'https://image.tmdb.org/t/p/w500/7fn624j5lj3xTMe2SgiLCeuedmO.jpg' },
-        { _id: 'f24', title: 'Joker', _poster: 'https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg' },
-    ];
+    /* ── No Fallback data used, strictly using API ── */
 
     /* ── Fetch TMDB image base URL ── */
     try {
@@ -61,13 +34,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     title: item.title || item.name || 'Untitled',
                     _poster: item.poster_path
                         ? imageBase + item.poster_path
-                        : FALLBACK_MOVIES[idx % FALLBACK_MOVIES.length]._poster,
+                        : 'https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg',
                 }));
             } else {
-                allMovies = FALLBACK_MOVIES;
+                allMovies = [];
             }
         } catch (_) {
-            allMovies = FALLBACK_MOVIES;
+            allMovies = [];
         }
 
         currentList = allMovies;
@@ -100,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     title: item.title || item.name || 'Untitled',
                     _poster: item.poster_path
                         ? imageBase + item.poster_path
-                        : FALLBACK_MOVIES[idx % FALLBACK_MOVIES.length]._poster,
+                        : 'https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg',
                 }));
                 renderGrid(currentList);
             }

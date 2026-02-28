@@ -84,44 +84,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (data && data.success && data.data.results && data.data.results.length > 0) {
-            let results = data.data.results.map((item, idx) => ({
+            allMovies = data.data.results.map((item, idx) => ({
                 ...item,
                 _poster: item.poster_path
                     ? imageBaseUrl + item.poster_path
                     : fallbackPoster(idx),
-            }));
-
-            // Pad / trim to exactly 50
-            let i = 0;
-            while (results.length < 50) {
-                results.push({
-                    title: `Extra Pick #${++i}`,
-                    _poster: fallbackPoster(results.length),
-                    vote_average: +(8.5 - i * 0.05).toFixed(1),
-                });
-            }
-            allMovies = results.slice(0, 50);
+            })).slice(0, 50);
         } else {
-            allMovies = buildFallbackList();
+            allMovies = []; // Strictly rely on API data, empty if none
         }
 
         renderPage(1);
-    };
-
-    const buildFallbackList = () => {
-        const list = [];
-        const titles = [
-            'The Shawshank Redemption', 'The Godfather', 'The Dark Knight', '12 Angry Men',
-            "Schindler's List", 'The Lord of the Rings', 'Pulp Fiction', 'Forrest Gump',
-        ];
-        for (let i = 0; i < 50; i++) {
-            list.push({
-                title: titles[i % titles.length],
-                _poster: fallbackPoster(i),
-                vote_average: +(9.9 - i * 0.05).toFixed(1),
-            });
-        }
-        return list;
     };
 
     /* ── render one page of 8 cards ── */

@@ -27,30 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     } catch (_) { }
 
-    /* ── Fallback demo data (shown when no id supplied or API fails) ── */
-    const FALLBACK = {
-        title: 'The Shawshank Redemption',
-        synopsis: 'Framed in the 1940s for the double murder of his wife and her lover, upstanding banker Andy Dufresne begins a new life at the Shawshank State Penitentiary, where he puts his accounting skills to work for an amoral warden.',
-        poster_url: 'https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg',
-        rating: 9.3,
-        release_date: '1994-09-23',
-        runtime: 142,
-        genres: [{ name: 'Drama' }, { name: 'Crime' }],
-        cast: [
-            { name: 'Tim Robbins', character: 'Andy Dufresne', profile_path: null },
-            { name: 'Morgan Freeman', character: 'Ellis Boyd Redding', profile_path: null },
-            { name: 'Bob Gunton', character: 'Warden Norton', profile_path: null },
-            { name: 'William Sadler', character: 'Heywood', profile_path: null },
-            { name: 'Clancy Brown', character: 'Captain Hadley', profile_path: null },
-            { name: 'Gil Bellows', character: 'Tommy', profile_path: null },
-        ],
-        crew: [
-            { name: 'Frank Darabont', job: 'Director', profile_path: null },
-            { name: 'Frank Darabont', job: 'Screenplay', profile_path: null },
-            { name: 'Niki Marvin', job: 'Producer', profile_path: null },
-            { name: 'Roger Deakins', job: 'Director of Photography', profile_path: null },
-        ],
-    };
+    /* ── Fallback removed: strictly using API data. ── */
 
     /* ── Fetch from /api/details/:type/:id ── */
     const fetchDetail = async (id, type) => {
@@ -158,12 +135,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.title = `What's Next? – ${title}`;
     };
 
+    /* ── Error State ── */
+    const showError = () => {
+        contentEl.innerHTML = `
+            <div style="text-align: center; padding: 100px 20px; color: rgba(255,255,255,0.4); font-family: 'Syne', sans-serif;">
+                <h2>Movie not found.</h2>
+                <p>We couldn't load the details for this item.</p>
+            </div>`;
+    };
+
     /* ── Init ── */
     if (!movieId) {
-        render(FALLBACK);
+        showError();
         return;
     }
 
     const movie = await fetchDetail(movieId, mediaType);
-    render(movie || FALLBACK);
+    if (movie) {
+        render(movie);
+    } else {
+        showError();
+    }
 });
