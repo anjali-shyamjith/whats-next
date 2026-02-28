@@ -50,6 +50,42 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = `results.html?${params.toString()}`;
     });
 
+    // Surprise me button → fetch 50 items and pick a random one
+    const surpriseBtn = document.getElementById('surprise-btn');
+    if (surpriseBtn) {
+        surpriseBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const type = typeSelect.value || 'movie';
+
+            // Show loading state on button
+            const originalText = surpriseBtn.textContent;
+            surpriseBtn.textContent = 'Deciding...';
+            surpriseBtn.style.pointerEvents = 'none';
+
+            try {
+                const res = await fetch(`/api/suggestions?type=${type}&limit=50`);
+                const data = await res.json();
+
+                if (data.success && data.data.results && data.data.results.length > 0) {
+                    const results = data.data.results;
+                    const randomItem = results[Math.floor(Math.random() * results.length)];
+
+                    // Navigate to movie detail page
+                    const fromUrl = encodeURIComponent(window.location.href);
+                    window.location.href = `movie.html?id=${randomItem.id}&type=${type}&from=${fromUrl}`;
+                } else {
+                    alert('Could not find any items to surprise you with. Please try again.');
+                }
+            } catch (err) {
+                console.error('Surprise me fetch error:', err);
+                alert('Something went wrong. Please try again.');
+            } finally {
+                surpriseBtn.textContent = originalText;
+                surpriseBtn.style.pointerEvents = '';
+            }
+        });
+    }
+
     // 1. Fetch TMDB configuration mapping from backend
     const fetchConfig = async () => {
         try {
