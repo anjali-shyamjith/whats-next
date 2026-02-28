@@ -1,47 +1,112 @@
-# What's Next?
-A web application that suggests movies, TV series, documentaries, anime, etc. based on your preferences using the TMDB API.
+<p align="center">
+  <img src="./img.png" alt="Project Banner" width="100%">
+</p>
 
-## Project Structure
-This repository contains the backend server, and provides a space (`public/`) for the frontend application.
+# WHAT'S NEXT? 🎯
 
-* `src/`: Backend logic, controllers, services, and routes.
-* `public/`: The frontend application (HTML, CSS, Vanilla JS). The backend serves files from this directory statically.
-* `server.js`: The main entry point for the Express backend.
+## Basic Details
 
-## Setting Up
+### Team Name: Mad HackerX
 
-### Prerequisites
-1. You must have **Node.js** and **npm** installed.
-2. You need a **TMDB API Key** (from [The Movie Database](https://developer.themoviedb.org/docs/getting-started)).
+### Team Members
+- Member 1: K NIVEDITHA MANOHARAN- College Of Engineering Thalasssery
+- Member 2: ANJALI SHYAMJITH - College Of Engineering Thalasssery
 
-### Installation
-1. Clone this repository.
-2. Run `npm install` in the rooot directory to install all backend dependencies.
-3. Create a `.env` file based on `.env.example`:
-   ```bash
-   PORT=3000
-   TMDB_API_KEY=your_actual_api_key_here
-   ```
+### Hosted Project Link
+https://whats-next-snowy.vercel.app/index.html
 
-### Running the Project
-* **Development Mode (Auto-restarts on change):**
-  ```bash
-  npm run dev
-  ```
-* **Standard Start:**
-  ```bash
-  npm start
-  ```
+### Project Description
+What's Next? takes the guesswork out of movie nights. 
+Just tell us how you're feeling, and we'll match you with the perfect film, series, documentary, or anime — tailored to your mood, every time.
 
-Once running, the backend API will be available at `http://localhost:3000/api` and the frontend will be served at `http://localhost:3000/`.
+### The Problem statement
+People often spend more time searching for something to watch than actually watching it. With so much content available, it's easy to feel overwhelmed and end up watching nothing at all.
+Most platforms recommend content based on what you've watched before — but they don't consider how you're feeling right now. A person who's happy wants something very different from someone who's stressed, sad, or bored.
+What's Next? solves this by asking one simple question — "How are you feeling?" — and using your mood and preferred genre to instantly suggest the perfect movie, series, documentary, or anime for that moment.
 
-## API Endpoints Overview
-* `GET /api/config`: Get TMDB configuration data (image base URLs).
-* `GET /api/genres?type=(movie|tv)`: Get movie or TV genre lists.
-* `GET /api/suggestions`: Get content suggestions.
-  * Query Params:
-    * `type`: `movie`, `tv`, `anime`, `documentary` (default `movie`)
-    * `genre`: Optional TMDB genre ID
-    * `rating`: Optional minimum rating (e.g., `7.0`)
-    * `page`: Optional page number
-    * `sort_by`: Optional sort string (default `popularity.desc`)
+### The Solution
+What's Next? is a web application that recommends movies, TV series, documentaries, and anime based on the user's current mood and preferred genre.
+Instead of scrolling endlessly or relying on what you watched last week, the app makes it simple:
+
+Select your mood — Happy, Sad, Stressed, Bored, Romantic, Adventurous, and more
+Pick a genre — Action, Comedy, Horror, Drama, Sci-Fi, and more
+Get instant recommendations — curated content that actually matches how you feel right now
+
+The app connects to the TMDB API to pull real, up-to-date content and filters results based on the mood-genre combination the user selects — delivering a personalised, stress-free viewing experience in seconds.
+No accounts. No algorithms tracking you. Just your mood and your next great watch.
+
+---
+
+## Technical Details
+
+### Technologies/Components Used
+
+**For Software:**
+Languages: JavaScript (ES6+), HTML5, CSS3
+
+Backend: Node.js, Express.js, Axios, axios-retry, dotenv, cors, morgan
+
+Frontend: Vanilla JS, CSS Custom Properties (Variables), Google Fonts
+
+Tools & APIs: npm, TMDB API, Fetch API
+
+---
+
+## Features
+
+List the key features of your project:
+Mood & Genre Filtering: Personalized suggestions based on current emotional state.
+
+"Surprise Me": Instant random high-rated recommendation from selected categories.
+
+Smart Recommendations: Advanced discovery based on traits of multiple "Past Watches."
+
+Rich Detail Views: Comprehensive info including full cast, crew, and high-res posters.
+
+Privacy-First: No accounts or tracking; recommendations are purely session-based.
+
+Reliable Performance: Built-in API retries and local metadata fallbacks for stability.
+
+#### Screenshots (Add at least 3)
+
+[Screenshots](https://drive.google.com/drive/u/1/folders/1nodaH0OYnjK30YiMcvXTzLh6huxYTolJ)
+
+#### Diagrams
+
+**System Architecture:**
+
+![Architecture Diagram](https://drive.google.com/drive/u/0/folders/1vgNfIdIb7cY1qFGEUbrT7tsZz0Yx62bG)
+User → Category → Filters → Taste Seeding (3-5 titles)
+         ↓
+   Fetch user history + TMDB metadata
+         ↓
+   TMDB API (central resolver)
+         ↓
+   Ranked results (high→low) → Displayed to user
+         ↓
+   User DB updated (watchlist, interactions)
+
+**Application Workflow:**
+
+![Workflow](https://drive.google.com/drive/u/0/folders/1vgNfIdIb7cY1qFGEUbrT7tsZz0Yx62bG)
+Home + Filters → Taste Seeding → Recommendations Grid
+                      ↓
+              Profile / Watchlist (accessible throughout)
+
+## Project Demo
+
+### Video
+[Video recording](https://drive.google.com/drive/u/0/folders/1M_ZI-7ksLsIzD8GFXHtVmDHafHVGYtaB)
+
+---
+
+## AI Tools Used (Optional - For Transparency Bonus)
+
+**Tool Used:** ChatGPT, Claude, Antigravity
+
+## Team Contributions
+
+- K NIVEDITHA MANOHARAN: Frontend development
+- ANJALI SHYAMJITH: Backend development
+
+Made with ❤️ at TinkerHub
