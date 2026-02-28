@@ -204,10 +204,10 @@ const searchMedia = async (query, page = 1) => {
       include_adult: false,
     },
   });
-  
+
   // Filter out 'person' results from multi-search as we only want media
   const mediaResults = response.data.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
-  
+
   return {
     ...response.data,
     results: mediaResults,
@@ -231,11 +231,12 @@ const getAggregatedRecommendations = async (items, page = 1, limit = 20) => {
       const type = item.type === 'tv' ? 'tv' : 'movie';
       // Fetch more pages from TMDB to ensure we have enough unique pool items
       // (TMDB returns 20 per page, fetching page 1 and 2 normally provides enough unique IDs)
-      const res1 = client.get(`/${type}/${item.id}/recommendations`, { params: { page: 1 } });
-      const res2 = client.get(`/${type}/${item.id}/recommendations`, { params: { page: 2 } });
-      
+      // Add individual catch blocks to prevent a single page failure from dropping the whole array
+      const res1 = client.get(`/${type}/${item.id}/recommendations`, { params: { page: 1 } }).catch(() => ({ data: { results: [] } }));
+      const res2 = client.get(`/${type}/${item.id}/recommendations`, { params: { page: 2 } }).catch(() => ({ data: { results: [] } }));
+
       const [data1, data2] = await Promise.all([res1, res2]);
-      
+
       return [...(data1.data.results || []), ...(data2.data.results || [])];
     } catch (error) {
       console.warn(`Failed to fetch recommendations for ${item.type} ${item.id}`);
@@ -251,7 +252,7 @@ const getAggregatedRecommendations = async (items, page = 1, limit = 20) => {
   resultsArrays.flat().forEach(media => {
     // Only process valid movie/tv responses
     if (!media.id) return;
-    
+
     // Create a unique key using type and id to handle ID collisions between movies/tv
     const mediaType = media.media_type || (media.title ? 'movie' : 'tv');
     const uniqueKey = `${mediaType}_${media.id}`;
@@ -287,7 +288,7 @@ const getAggregatedRecommendations = async (items, page = 1, limit = 20) => {
   // 4. Handle pagination of the final top-50 array
   const totalResults = sortedRecommendations.length;
   const totalPages = Math.ceil(totalResults / limit);
-  
+
   // Ensure valid page bounds
   const validPage = Math.max(1, Math.min(page, totalPages || 1));
   const startIndex = (validPage - 1) * limit;

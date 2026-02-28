@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     /* ── Fetch top movies (uses discover sorted by vote average) ── */
     const loadTopMovies = async () => {
         try {
-            const res = await fetch('/api/suggestions?type=movie');
+            const res = await fetch('/api/suggestions?type=movie&limit=25');
             const data = await res.json();
 
             if (data.success && data.data.results && data.data.results.length > 0) {

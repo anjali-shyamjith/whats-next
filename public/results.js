@@ -53,10 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (watchlist) {
             // Handle Watchlist Recommendations via POST
             const ids = watchlist.split(',');
-            const items = ids.map(id => ({ id: id.startsWith('f') ? 550 : id, type: 'movie' })); // Fallback ID 550 if it's a fake 'f' prefixed ID
+            const safeIds = ids.map(id => /^\d+$/.test(id) ? id : '550');
+            const items = safeIds.map(id => ({ id: id, type: 'movie' }));
 
             try {
-                const res = await fetch('/api/recommendations', {
+                const res = await fetch('/api/recommendations?limit=50', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ items: items.slice(0, 5) })
@@ -67,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // Standard Suggestions via GET
-            let url = `/api/suggestions?type=${type}`;
+            let url = `/api/suggestions?type=${type}&limit=50`;
             if (genre) url += `&genre=${genre}`;
             if (mood) url += `&mood=${mood}`;
             if (duration) url += `&duration=${duration}`;
